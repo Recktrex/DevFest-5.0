@@ -1,52 +1,43 @@
 using UnityEngine;
 
-using UnityEngine;
-
 public class TimeFreezable : MonoBehaviour
 {
-    Rigidbody2D rb;
-    bool frozen;
+    protected bool isFrozen;
+    protected Rigidbody2D rb;
 
-    Vector2 savedVelocity;
-    float savedAngularVelocity;
-    float savedGravity;
+    RigidbodyConstraints2D originalConstraints;
+    float originalGravity;
 
-    void Awake()
+    protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        if (rb == null)
-            Debug.LogError($"{name} has no Rigidbody2D!");
     }
 
-    public void Freeze()
+    public virtual void Freeze()
     {
-        if (frozen || rb == null) return;
+        isFrozen = true;
+        if (rb == null) return;
 
-        frozen = true;
-
-        savedVelocity = rb.linearVelocity;
-        savedAngularVelocity = rb.angularVelocity;
-        savedGravity = rb.gravityScale;
+        originalConstraints = rb.constraints;
+        originalGravity = rb.gravityScale;
 
         rb.linearVelocity = Vector2.zero;
         rb.angularVelocity = 0f;
         rb.gravityScale = 0f;
-        rb.simulated = false;   // 🔑 THIS STOPS FALLING
-
-        Debug.Log("FREEZE " + name);
-
+        rb.constraints = RigidbodyConstraints2D.FreezeAll;
     }
 
-    public void Unfreeze()
+    public virtual void Unfreeze()
     {
-        if (!frozen || rb == null) return;
+        isFrozen = false;
+        if (rb == null) return;
 
-        frozen = false;
-
-        rb.simulated = true;
-        rb.gravityScale = savedGravity;
-        rb.linearVelocity = savedVelocity;
-        rb.angularVelocity = savedAngularVelocity;
+        rb.constraints = originalConstraints;
+        rb.gravityScale = originalGravity;
     }
 }
+
+
+
+
 

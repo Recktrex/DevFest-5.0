@@ -2,19 +2,31 @@ using UnityEngine;
 
 public class SliderMovement : MonoBehaviour
 {
-    public float speed = 5f;
-    private float startX = 7f;
-    private float endX = 45f;
+    public float speed = 3f;
+    public float startX = 7f;
+    public float endX = 45f;
 
-    void Update()
+    Rigidbody2D rb;
+    int direction = 1;
+
+    void Awake()
     {
-        // Calculate the distance (38 units)
-        float distance = endX - startX;
-        
-        // PingPong bounces value between 0 and distance
-        float x = startX + Mathf.PingPong(Time.time * speed, distance);
+        rb = GetComponent<Rigidbody2D>();
 
-        // Apply new position keeping Y and Z the same
-        transform.position = new Vector3(x, transform.position.y, transform.position.z);
+        rb.bodyType = RigidbodyType2D.Kinematic;
+        rb.gravityScale = 0f;
+        rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+        rb.interpolation = RigidbodyInterpolation2D.Interpolate;
+        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+    }
+
+    void FixedUpdate()
+    {
+        if (rb.position.x >= endX)
+            direction = -1;
+        else if (rb.position.x <= startX)
+            direction = 1;
+
+        rb.velocity = new Vector2(direction * speed, 0f);
     }
 }

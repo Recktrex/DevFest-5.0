@@ -13,72 +13,85 @@ public class playermovement : MonoBehaviour
     public float groundCheckRadius = 0.2f;
     public LayerMask groundLayer;
 
-    private Rigidbody2D rb;
-    private bool isGrounded;
-    private float currentSpeed;
+    [Header("Jump Assist")]
+    public float coyoteTime = 0.15f;
 
-    void Start()
+    Rigidbody2D rb;
+    Rigidbody2D groundRb;
+
+    float inputX;
+    float currentSpeed;
+    float coyoteTimer;
+
+    void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
     }
 
     void Update()
     {
-        // -------- INPUT --------
-        float targetInput = 0f;
+        // INPUT ONLY
+        inputX = Input.GetAxisRaw("Horizontal");
 
-        if (Input.GetKey(KeyCode.A))
-            targetInput = -1f;
-        else if (Input.GetKey(KeyCode.D))
-            targetInput = 1f;
-
-        // -------- GROUND CHECK --------
-        isGrounded = Physics2D.OverlapCircle(
+        Collider2D groundCol = Physics2D.OverlapCircle(
             groundCheck.position,
             groundCheckRadius,
             groundLayer
         );
 
-        // -------- SMOOTH MOVEMENT --------
-        float targetSpeed = targetInput * moveSpeed;
-
-        if (Mathf.Abs(targetInput) > 0.01f)
+        if (groundCol != null)
         {
-            // Accelerate
-            currentSpeed = Mathf.Lerp(
-                currentSpeed,
-                targetSpeed,
-                acceleration * Time.deltaTime
-            );
+            coyoteTimer = coyoteTime;
+            groundRb = groundCol.attachedRigidbody;
         }
         else
         {
-            // Decelerate
-            currentSpeed = Mathf.Lerp(
-                currentSpeed,
-                0f,
-                deceleration * Time.deltaTime
-            );
+            coyoteTimer -= Time.deltaTime;
+            groundRb = null;
         }
 
-        rb.linearVelocity = new Vector2(currentSpeed, rb.linearVelocity.y);
-
-        // -------- JUMP --------
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        if (Input.GetKeyDown(KeyCode.Space) && coyoteTimer > 0f)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+            coyoteTimer = 0f;
         }
     }
 
-    private void OnDrawGizmosSelected()
+    void FixedUpdate()
+    {
+        // Player-controlled movement
+        float targetSpeed = inputX * moveSpeed;
+
+        float accel = Mathf.Abs(targetSpeed) > 0.01f
+            ? acceleration
+            : deceleration;
+
+        currentSpeed = Mathf.MoveTowards(
+            currentSpeed,
+            targetSpeed,
+            accel * Time.fixedDeltaTime
+        );
+
+        // Platform carry (THIS is the fix)
+        float platformVelocityX = 0f;
+        if (groundRb != null && groundRb.bodyType == RigidbodyType2D.Kinematic)
+        {
+            platformVelocityX = groundRb.linearVelocity.x;
+        }
+
+        rb.linearVelocity = new Vector2(
+            platformVelocityX + currentSpeed,
+            rb.linearVelocity.y
+        );
+    }
+
+    void OnDrawGizmosSelected()
     {
         if (groundCheck == null) return;
-
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
     }
 }
-
 
 
 
