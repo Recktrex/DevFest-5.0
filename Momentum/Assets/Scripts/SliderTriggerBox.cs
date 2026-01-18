@@ -15,6 +15,8 @@ public class SliderTriggerBox : MonoBehaviour
         if (collision.gameObject.name == "falling platform")
         {
             activated = true;
+            Debug.Log("Activated");
+
 
             // Spawn yellow dot at red dot position
             Vector3 spawnPos = redDot.transform.position;
