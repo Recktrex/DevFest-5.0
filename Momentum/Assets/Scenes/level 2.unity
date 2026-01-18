@@ -672,6 +672,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Slider
       objectReference: {fileID: 0}
+    - target: {fileID: 8917213374408347958, guid: 017381168bbeea448bedb641d344911c, type: 3}
+      propertyPath: endX
+      value: 48.5
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

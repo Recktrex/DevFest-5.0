@@ -27,6 +27,6 @@ public class SliderMovement : MonoBehaviour
         else if (rb.position.x <= startX)
             direction = 1;
 
-        rb.velocity = new Vector2(direction * speed, 0f);
+        rb.linearVelocity = new Vector2(direction * speed, 0f);
     }
 }

@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class playermovement : MonoBehaviour
 {
@@ -16,12 +18,18 @@ public class playermovement : MonoBehaviour
     [Header("Jump Assist")]
     public float coyoteTime = 0.15f;
 
+    [Header("Fall Restart")]
+    public float fallY = -5f;
+    public float restartDelay = 1.5f;
+
     Rigidbody2D rb;
     Rigidbody2D groundRb;
 
     float inputX;
     float currentSpeed;
     float coyoteTimer;
+
+    bool isDead = false;   // NEW
 
     void Awake()
     {
@@ -30,6 +38,14 @@ public class playermovement : MonoBehaviour
 
     void Update()
     {
+        // Restart if fallen
+        if (!isDead && rb.position.y < fallY)
+        {
+            isDead = true;
+            StartCoroutine(RestartLevel());
+            return;
+        }
+
         // INPUT ONLY
         inputX = Input.GetAxisRaw("Horizontal");
 
@@ -59,6 +75,8 @@ public class playermovement : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (isDead) return; // freeze control while dying
+
         // Player-controlled movement
         float targetSpeed = inputX * moveSpeed;
 
@@ -72,7 +90,7 @@ public class playermovement : MonoBehaviour
             accel * Time.fixedDeltaTime
         );
 
-        // Platform carry (THIS is the fix)
+        // Platform carry
         float platformVelocityX = 0f;
         if (groundRb != null && groundRb.bodyType == RigidbodyType2D.Kinematic)
         {
@@ -85,6 +103,12 @@ public class playermovement : MonoBehaviour
         );
     }
 
+    IEnumerator RestartLevel()
+    {
+        yield return new WaitForSeconds(restartDelay);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
     void OnDrawGizmosSelected()
     {
         if (groundCheck == null) return;
@@ -92,6 +116,3 @@ public class playermovement : MonoBehaviour
         Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
     }
 }
-
-
-
