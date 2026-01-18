@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class YellowDot : MonoBehaviour
 {
@@ -8,6 +9,10 @@ public class YellowDot : MonoBehaviour
         {
             Debug.Log("YOU WIN!");
             // You can load next level here later
+            if (SceneManager.GetActiveScene().name == "level 2")
+            {
+                FindObjectOfType<gameManager>().EndGame();
+            }
         }
     }
 }
